@@ -1,56 +1,59 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login({ users, students, setUsers, setStudents, onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loginRole, setLoginRole] = useState('teacher');
-  const [loginId, setLoginId] = useState('teacher1');
-  const [loginPw, setLoginPw] = useState('1234');
   const [loginError, setLoginError] = useState('');
   
-  const [regRole] = useState('parent');
-  const [regId, setRegId] = useState('');
-  const [regName, setRegName] = useState('');
+  // States for simplified registration
   const [regEmail, setRegEmail] = useState('');
-  const [regPw, setRegPw] = useState('');
+  const [regName, setRegName] = useState('');
   const [regStudentName, setRegStudentName] = useState('');
   const [regStudentSport, setRegStudentSport] = useState('');
   const [regStudentGrade, setRegStudentGrade] = useState('1학년');
   const [regStudentClass, setRegStudentClass] = useState('1반');
   const [regSuccessMsg, setRegSuccessMsg] = useState('');
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setLoginError('');
+  const handleGoogleSuccess = (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      const email = decoded.email;
+      const name = decoded.name;
 
-    const foundUser = users.find(u => u.id === loginId);
-    if (!foundUser) {
-      setLoginError('존재하지 않는 아이디입니다.');
-      return;
+      const foundUser = users.find(u => u.email === email && u.role === loginRole);
+      if (foundUser) {
+        if (!foundUser.approved) {
+          setLoginError('아직 관리교사의 회원가입 승인이 대기 중입니다.');
+          return;
+        }
+        onLogin(foundUser);
+      } else {
+        if (loginRole === 'teacher') {
+          setLoginError('등록된 교사 계정이 아닙니다. (신규 교사 등록은 시스템 관리자에게 문의하세요)');
+          return;
+        }
+        setIsRegistering(true);
+        setRegEmail(email);
+        setRegName(name);
+        setLoginError('');
+        setRegSuccessMsg('구글 계정이 확인되었습니다. 학생 선수 정보를 입력하여 가입을 완료해 주세요.');
+      }
+    } catch (err) {
+      setLoginError('구글 로그인 중 오류가 발생했습니다.');
     }
+  };
 
-    if (foundUser.role !== loginRole) {
-      setLoginError('선택하신 회원 유형과 일치하지 않는 사용자입니다.');
-      return;
-    }
-
-    if (!foundUser.approved) {
-      setLoginError('아직 관리교사의 회원가입 승인이 대기 중입니다.');
-      return;
-    }
-
-    onLogin(foundUser);
+  const handleGoogleError = () => {
+    setLoginError('구글 로그인에 실패했습니다.');
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
-    if (!regId || !regName || !regEmail || !regPw || !regStudentName) {
+    if (!regStudentName || !regStudentSport) {
       setLoginError('모든 필드를 정상적으로 입력해 주세요.');
-      return;
-    }
-
-    if (users.some(u => u.id === regId)) {
-      setLoginError('이미 사용 중인 아이디입니다.');
       return;
     }
 
@@ -70,8 +73,9 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
       counselingLogs: []
     };
 
+    const newUserId = `parent_${Date.now()}`;
     const newUser = {
-      id: regId,
+      id: newUserId,
       name: regName,
       role: 'parent',
       email: regEmail,
@@ -85,19 +89,16 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
     setRegSuccessMsg('회원가입 신청이 완료되었습니다! 교사 승인 후 로그인이 가능합니다.');
     setIsRegistering(false);
     
-    setRegId('');
-    setRegName('');
-    setRegEmail('');
-    setRegPw('');
     setRegStudentName('');
+    setRegStudentSport('');
   };
 
   return (
     <div className="auth-container">
-      <div className="glass-card animate-fade-in">
+      <div className="glass-card animate-fade-in" style={{maxWidth:'450px', margin:'0 auto'}}>
         <div className="auth-header">
           <h2>환영합니다!</h2>
-          <p>{isRegistering ? '학부모용 통합 계정 만들기' : '학생선수 안전출결 통합 계정 로그인'}</p>
+          <p>{isRegistering ? '학생선수 안전출결 통합 계정 만들기' : '학생선수 안전출결 통합 계정 로그인'}</p>
         </div>
 
         <div className="auth-body">
@@ -116,103 +117,58 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
           )}
 
           {!isRegistering ? (
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label className="form-label">회원 유형</label>
-                <div className="role-selector">
+            <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'1.5rem', padding:'1rem 0 2rem 0'}}>
+              <div style={{width:'100%', marginBottom:'0.5rem'}}>
+                <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>회원 유형</label>
+                <div style={{display:'flex', gap:'0.25rem', backgroundColor:'var(--surface-color)', padding:'0.35rem', border:'1px solid var(--border-color)', borderRadius:'var(--radius-xl)'}}>
                   <button
                     type="button"
-                    onClick={() => { setLoginRole('teacher'); setLoginId('teacher1'); setLoginError(''); }}
-                    className={`role-btn ${loginRole === 'teacher' ? 'active' : ''}`}
+                    onClick={() => { setLoginRole('teacher'); setLoginError(''); }}
+                    style={{flex:1, padding:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', borderRadius:'var(--radius-lg)', fontSize:'0.875rem', fontWeight:'700', transition:'all 0.2s', border:'none', cursor:'pointer', backgroundColor: loginRole === 'teacher' ? 'white' : 'transparent', color: loginRole === 'teacher' ? 'var(--primary-color)' : 'var(--text-secondary)', boxShadow: loginRole === 'teacher' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
                   >
                     🎒 관리 교사
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setLoginRole('parent'); setLoginId('parent1'); setLoginError(''); }}
-                    className={`role-btn parent ${loginRole === 'parent' ? 'active' : ''}`}
+                    onClick={() => { setLoginRole('parent'); setLoginError(''); }}
+                    style={{flex:1, padding:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', borderRadius:'var(--radius-lg)', fontSize:'0.875rem', fontWeight:'700', transition:'all 0.2s', border:'none', cursor:'pointer', backgroundColor: loginRole === 'parent' ? 'white' : 'transparent', color: loginRole === 'parent' ? 'var(--primary-color)' : 'var(--text-secondary)', boxShadow: loginRole === 'parent' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
                   >
                     👨‍👩‍👦 학부모
                   </button>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">사용자 아이디 (ID)</label>
-                <input 
-                  type="text" 
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  placeholder={loginRole === 'teacher' ? '예: teacher1' : '예: parent1'}
-                  className="form-input"
-                  required
-                />
+              <div style={{fontSize:'0.9rem', color:'var(--text-secondary)', textAlign:'center', lineHeight:'1.5'}}>
+                본 시스템은 <strong>구글 소셜 로그인만</strong> 지원합니다.<br/>사용하시는 구글 계정으로 안전하게 시작하세요.
               </div>
-
-              <div className="form-group">
-                <label className="form-label">비밀번호</label>
-                <input 
-                  type="password" 
-                  value={loginPw}
-                  onChange={(e) => setLoginPw(e.target.value)}
-                  placeholder="••••••••"
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <button type="submit" className="btn btn-primary mt-4">
-                안전 로그인 진행
-              </button>
-
-              <div className="mt-6 pt-4" style={{borderTop: '1px solid var(--border-color)', textAlign: 'center'}}>
-                <p style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>
-                  학부모 회원이신가요? 아직 계정이 없다면
-                  <button
-                    type="button"
-                    onClick={() => { setIsRegistering(true); setLoginError(''); setRegSuccessMsg(''); }}
-                    style={{color: 'var(--primary-color)', fontWeight: '700', marginLeft: '0.25rem', background:'none', border:'none', cursor:'pointer'}}
-                  >
-                    회원가입 신청
-                  </button>
-                </p>
-              </div>
-            </form>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap
+                theme="filled_blue"
+                text="signin_with"
+                shape="rectangular"
+                width="100%"
+              />
+            </div>
           ) : (
             <form onSubmit={handleRegister}>
-              <div className="alert alert-info">
-                학부모 신규 가입은 관리 교사의 승인을 받아야 정상 로그인이 활성화됩니다.
+              <div className="alert alert-info mb-4" style={{fontSize:'0.8rem'}}>
+                학부모 신규 가입은 관리 교사의 승인을 받아야 로그인이 활성화됩니다.
               </div>
 
-              <div className="form-group">
-                <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>학부모 계정 아이디 (ID)</label>
-                <input 
-                  type="text" 
-                  value={regId}
-                  onChange={(e) => setRegId(e.target.value)}
-                  placeholder="ID로 사용할 문자를 입력하세요"
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <div className="form-group w-full">
-                  <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>학부모 이름</label>
-                  <input type="text" value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="실명 입력" className="form-input" required />
+              <div className="flex gap-4 mb-4">
+                <div className="form-group w-full mb-0">
+                  <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>인증된 구글 이메일</label>
+                  <input type="email" value={regEmail} className="form-input" disabled style={{backgroundColor:'var(--bg-color)', color:'var(--text-tertiary)'}} />
                 </div>
-                <div className="form-group w-full">
-                  <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>연락용 이메일</label>
-                  <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="name@email.com" className="form-input" required />
+                <div className="form-group w-full mb-0">
+                  <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>사용자 이름</label>
+                  <input type="text" value={regName} className="form-input" disabled style={{backgroundColor:'var(--bg-color)', color:'var(--text-tertiary)'}} />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>계정 비밀번호</label>
-                <input type="password" value={regPw} onChange={(e) => setRegPw(e.target.value)} placeholder="••••••••" className="form-input" required />
-              </div>
-
-              <div className="mt-4 pt-4" style={{borderTop: '1px solid var(--border-color)'}}>
+              <div className="mt-2 pt-4" style={{borderTop: '1px solid var(--border-color)'}}>
                 <h4 style={{fontSize:'0.875rem', marginBottom:'1rem', fontWeight:'800'}}>🏅 관리 학생 선수 정보 입력</h4>
                 <div className="flex gap-4 mb-4">
                   <div className="form-group w-full mb-0">
@@ -221,7 +177,7 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
                   </div>
                   <div className="form-group w-full mb-0">
                     <label className="form-label" style={{textTransform:'none', color:'var(--text-secondary)'}}>소속 종목명</label>
-                    <input type="text" value={regStudentSport} onChange={(e) => setRegStudentSport(e.target.value)} placeholder="종목을 입력하세요 (예: 축구)" className="form-input" required />
+                    <input type="text" value={regStudentSport} onChange={(e) => setRegStudentSport(e.target.value)} placeholder="예: 축구" className="form-input" required />
                   </div>
                 </div>
                 <div className="flex gap-4 mb-4">
@@ -240,7 +196,7 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
                 </div>
               </div>
 
-              <div className="form-actions">
+              <div className="form-actions mt-6">
                 <button type="button" onClick={() => setIsRegistering(false)} className="btn btn-secondary flex-1">
                   이전으로
                 </button>

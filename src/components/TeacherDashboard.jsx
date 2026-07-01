@@ -24,6 +24,11 @@ export default function TeacherDashboard({ users, students, applications, setUse
     triggerToast('학교장확인서를 승인하였습니다.');
   };
 
+  const cancelApproval = (appId) => {
+    setApplications(applications.map(app => app.id === appId ? { ...app, status: '대기' } : app));
+    triggerToast('학교장확인서 승인을 취소하고 대기 상태로 변경했습니다.');
+  };
+
   const submitReject = () => {
     if (!tempRejectReason.trim()) {
       triggerToast('반려 사유를 입력해주세요.');
@@ -161,7 +166,7 @@ export default function TeacherDashboard({ users, students, applications, setUse
           <div className="dash-card">
             <div style={{display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'0.5rem'}}>
               <FileText className="w-5 h-5" style={{color:'var(--primary-color)'}}/>
-              <h3 style={{fontSize:'1rem', fontWeight:'800'}}>학생선수 실제 출결 및 지각 정보 직접 관리</h3>
+              <h3 style={{fontSize:'1rem', fontWeight:'800'}}>학생선수 실제 출결 입력 관리</h3>
             </div>
             <p style={{fontSize:'0.75rem', color:'var(--text-secondary)', marginBottom:'1.5rem'}}>실제 승인 반영된 출결 정보를 수동으로 기재하여 실시간 잔여일수를 계산해 줍니다.</p>
             
@@ -208,7 +213,7 @@ export default function TeacherDashboard({ users, students, applications, setUse
           <div className="dash-card" style={{flex: 1}}>
             <div style={{display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'0.5rem'}}>
               <Clock className="w-5 h-5" style={{color:'var(--warning-color)'}}/>
-              <h3 style={{fontSize:'1rem', fontWeight:'800'}}>온라인 제출 학교장 확인서 결재 심사함</h3>
+              <h3 style={{fontSize:'1rem', fontWeight:'800'}}>학교장 확인서 신청 관리</h3>
             </div>
             <p style={{fontSize:'0.75rem', color:'var(--text-secondary)', marginBottom:'1.5rem'}}>학부모가 신청한 대회 출석 및 대회 일정을 확인하고 승인/반려합니다.</p>
             
@@ -262,6 +267,12 @@ export default function TeacherDashboard({ users, students, applications, setUse
                           <button onClick={() => approveApplication(app.id)} style={{background:'var(--primary-color)', color:'white', border:'none', padding:'0.5rem 1.25rem', borderRadius:'var(--radius-full)', cursor:'pointer', fontSize:'0.75rem', fontWeight:'700', transition:'all 0.2s'}}>최종 승인</button>
                         </div>
                       )}
+                      
+                      {app.status === '승인' && (
+                        <div style={{display:'flex', justifyContent:'flex-end', gap:'0.75rem', marginTop:'0.5rem'}}>
+                          <button onClick={() => cancelApproval(app.id)} style={{background:'white', color:'var(--text-secondary)', border:'1px solid var(--border-color)', padding:'0.4rem 1rem', borderRadius:'var(--radius-full)', cursor:'pointer', fontSize:'0.75rem', fontWeight:'700', transition:'all 0.2s'}}>승인 취소</button>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Rejection Note */}
@@ -282,7 +293,7 @@ export default function TeacherDashboard({ users, students, applications, setUse
       <div className="dash-card" style={{marginTop:'1.5rem'}}>
         <div style={{display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'0.5rem'}}>
           <Users className="w-5 h-5" style={{color:'var(--warning-color)'}}/>
-          <h3 style={{fontSize:'1rem', fontWeight:'800'}}>관리 중인 교내 학생선수 출결 연계 상황부 (통합 대장)</h3>
+          <h3 style={{fontSize:'1rem', fontWeight:'800'}}>전체 학생선수 출결 연계 상황부 (통합대장)</h3>
         </div>
         <p style={{fontSize:'0.75rem', color:'var(--text-secondary)', marginBottom:'1.5rem'}}>교사에 의해 정식 승인 완료된 공식 수치입니다.</p>
         
@@ -328,18 +339,26 @@ export default function TeacherDashboard({ users, students, applications, setUse
       {/* Reject Modal */}
       {rejectingAppId && (
         <div className="modal-overlay">
-          <div className="modal-content">
-            <div style={{display:'flex', alignItems:'center', gap:'0.5rem', color:'var(--danger-color)', marginBottom:'1rem'}}>
-              <AlertCircle className="w-6 h-6"/> <h3 style={{fontSize:'1.25rem', fontWeight:'800'}}>신청서 반려</h3>
+          <div className="modal-content" style={{maxWidth:'500px', padding:'1.5rem'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'0.5rem'}}>
+              <X className="w-6 h-6" style={{color:'#ef4444', strokeWidth: 3}}/> 
+              <h3 style={{fontSize:'1.1rem', fontWeight:'800', color:'var(--text-primary)', margin:0}}>학교장확인서 반려 사유 입력</h3>
             </div>
-            <p style={{fontSize:'0.875rem', color:'var(--text-secondary)', marginBottom:'1rem'}}>반려 사유를 입력하시면 학부모에게 전달됩니다.</p>
-            <div className="form-group">
-              <label className="form-label">반려 사유</label>
-              <textarea className="form-input" rows="4" value={tempRejectReason} onChange={e => setTempRejectReason(e.target.value)} placeholder="공식 증빙 서류 미비 등..."></textarea>
+            <p style={{fontSize:'0.8rem', color:'var(--text-secondary)', marginBottom:'1.25rem'}}>학부모가 수정 보완할 수 있도록 구체적인 불허 사유를 작성해 주세요.</p>
+            
+            <div className="form-group" style={{marginBottom:'1.5rem'}}>
+              <textarea 
+                className="form-input" 
+                rows="4" 
+                value={tempRejectReason} 
+                onChange={e => setTempRejectReason(e.target.value)} 
+                placeholder="예: 경기 주말 개최임이 확인되었으나 금요일 불참 신청 사유가 불분명합니다. 첨부된 공문의 시간 계획표를 보완하여 재신청해 주시기 바랍니다."
+                style={{backgroundColor:'#f8fafc', border:'1px solid #e2e8f0', resize:'vertical', fontSize:'0.85rem'}}
+              ></textarea>
             </div>
-            <div className="form-actions" style={{justifyContent:'flex-end'}}>
-              <button onClick={() => setRejectingAppId(null)} className="btn btn-secondary" style={{width:'auto'}}>취소</button>
-              <button onClick={submitReject} className="btn btn-primary" style={{width:'auto', background:'var(--danger-color)'}}>반려 처리 확정</button>
+            <div className="form-actions" style={{justifyContent:'flex-end', gap:'0.5rem'}}>
+              <button onClick={() => setRejectingAppId(null)} style={{backgroundColor:'#f1f5f9', color:'#475569', border:'none', padding:'0.6rem 1.25rem', borderRadius:'var(--radius-lg)', fontWeight:'700', cursor:'pointer', fontSize:'0.875rem', transition:'background-color 0.2s'}}>취소</button>
+              <button onClick={submitReject} style={{backgroundColor:'#de3151', color:'white', border:'none', padding:'0.6rem 1.25rem', borderRadius:'var(--radius-lg)', fontWeight:'700', cursor:'pointer', fontSize:'0.875rem', transition:'background-color 0.2s'}}>반려 처리 완료</button>
             </div>
           </div>
         </div>

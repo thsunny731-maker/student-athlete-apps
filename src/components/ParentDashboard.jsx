@@ -119,7 +119,7 @@ export default function ParentDashboard({ user, students, applications, setAppli
           <div className="card-header" style={{alignItems:'flex-start', marginBottom:'1.5rem'}}>
             <h4 className="card-title" style={{alignItems:'flex-start', flex: 1}}>
               <TrendingUp className="w-5 h-5" style={{color:'var(--secondary-color)', marginTop:'0.125rem'}} />
-              <div style={{lineHeight:'1.3', fontSize:'0.95rem'}}>연간 법정 출결 허용 실시간 잔여일수</div>
+              <div style={{lineHeight:'1.3', fontSize:'0.95rem'}}>연간 법정 출석인정 결석 허용일수</div>
             </h4>
             <span style={{backgroundColor:'#fef3c7', color:'#b45309', border:'1px solid #fde68a', borderRadius:'var(--radius-full)', padding:'0.2rem 0.6rem', fontSize:'0.65rem', fontWeight:'700', textAlign:'center', marginLeft:'0.5rem', whiteSpace:'nowrap'}}>
               한도 20일<br/>기준
@@ -176,7 +176,7 @@ export default function ParentDashboard({ user, students, applications, setAppli
           </div>
 
           <div style={{marginTop:'1.5rem', border:'1px solid #e0e7ff', borderRadius:'var(--radius-lg)', padding:'1rem', fontSize:'0.7rem', color:'var(--primary-color)', lineHeight:'1.5', fontWeight:'600'}}>
-            💡 6시간 누적 시 1일 차감 규칙이 실시간 연산 적용되어 있습니다. 허용한도인 20일을 초과할 시 무단 결석으로 자동 처리되오니 잔여 한도를 반드시 체크하십시오.
+            💡 6시간 누적 시 1일 차감 규칙이 실시간 연산 적용되어 있습니다. 허용한도인 20일을 초과할 시 미인정 결석으로 자동 처리되오니 잔여 한도를 반드시 체크하십시오.
           </div>
         </div>
       </div>

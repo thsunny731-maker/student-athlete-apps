@@ -95,8 +95,8 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
     <div className="auth-container">
       <div className="glass-card animate-fade-in" style={{maxWidth:'450px', margin:'0 auto'}}>
         <div className="auth-header">
-          <h2>환영합니다!</h2>
-          <p>{isRegistering ? '학생선수 안전출결 통합 계정 만들기' : '학생선수 안전출결 통합 계정 로그인'}</p>
+          <h2>서울송례초등학교</h2>
+          <p>{isRegistering ? '학생선수 스마트 출결 관리 시스템 가입' : '학생선수 스마트 출결 관리 시스템 로그인'}</p>
         </div>
 
         <div className="auth-body">
@@ -145,7 +145,7 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
                 style={{width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.75rem', backgroundColor:'white', border:'1px solid var(--border-color)', borderRadius:'var(--radius-lg)', padding:'0.75rem', fontSize:'0.95rem', fontWeight:'600', color:'var(--text-primary)', cursor:'pointer', boxShadow:'0 1px 2px rgba(0,0,0,0.05)'}}
               >
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{width:'18px', height:'18px'}} />
-                Sign in with Google
+                Google로 가입 또는 로그인
               </button>
             </div>
           ) : (

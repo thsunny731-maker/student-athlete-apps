@@ -76,7 +76,7 @@ export default function App() {
             </div>
             <div className="brand-title">
               학생선수 스마트 출결 관리
-              <span className="brand-badge">v2.0</span>
+
             </div>
           </div>
 

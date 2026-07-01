@@ -184,10 +184,10 @@ export default function ParentDashboard({ user, students, applications, setAppli
       {/* Top Tabs aligned in a card-like container (Moved below Gauge) */}
       <div style={{display:'flex', gap:'0.25rem', backgroundColor:'var(--surface-color)', padding:'0.25rem', border:'1px solid var(--border-color)', borderRadius:'var(--radius-xl)'}}>
         <button onClick={() => setActiveTab('dashboard')} style={{flex:1, padding:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', borderRadius:'var(--radius-lg)', fontSize:'0.875rem', fontWeight:'700', transition:'all 0.2s', border:'none', cursor:'pointer', backgroundColor: activeTab === 'dashboard' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'dashboard' ? 'white' : 'var(--text-primary)'}}>
-          <FileText className="w-4 h-4" /> 새 학교장확인서 신청하기
+          <FileText className="w-4 h-4" /> 학교장 확인서 신청하기
         </button>
         <button onClick={() => setActiveTab('list')} style={{flex:1, padding:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', borderRadius:'var(--radius-lg)', fontSize:'0.875rem', fontWeight:'700', transition:'all 0.2s', border:'none', cursor:'pointer', backgroundColor: activeTab === 'list' ? 'var(--primary-color)' : 'transparent', color: activeTab === 'list' ? 'white' : 'var(--text-primary)'}}>
-          <Calendar className="w-4 h-4" /> 내 결재·승인 현황 <span style={{backgroundColor:'#fef3c7', color:'#b45309', padding:'0.15rem 0.5rem', borderRadius:'var(--radius-full)', fontSize:'0.7rem', marginLeft:'0.25rem'}}>{myApplications.length}건</span>
+          <Calendar className="w-4 h-4" /> 신청 현황 <span style={{backgroundColor:'#fef3c7', color:'#b45309', padding:'0.15rem 0.5rem', borderRadius:'var(--radius-full)', fontSize:'0.7rem', marginLeft:'0.25rem'}}>{myApplications.length}건</span>
         </button>
       </div>
 
@@ -259,7 +259,7 @@ export default function ParentDashboard({ user, students, applications, setAppli
                   onChange={(e) => setFormReason(e.target.value)}
                   className="form-input"
                   rows="3"
-                  placeholder="예시: 2026 경기도 교육감배 축구대회 본선 참가에 따른 대체 훈련 참석"
+                  placeholder="예시: 2026 서울시 교육감배 축구대회 본선 참가에 따른 대체 훈련 참석"
                   style={{padding:'1rem'}}
                   required
                 ></textarea>
@@ -286,7 +286,7 @@ export default function ParentDashboard({ user, students, applications, setAppli
           </div>
         ) : (
           <div className="dash-card">
-            <h3 className="card-title mb-4">내 신청 내역</h3>
+
             <div style={{overflowX:'auto'}}>
               <table className="data-table">
                 <thead>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { LogOut, FileSpreadsheet } from 'lucide-react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { INITIAL_USERS, INITIAL_STUDENTS, INITIAL_APPLICATIONS } from './data/mockData';
 import Login from './components/Login';
 import ParentDashboard from './components/ParentDashboard';
@@ -39,13 +38,9 @@ export default function App() {
     }
   };
 
-  // 임시 Google Client ID (실제 운영 시에는 사용자 본인의 Client ID로 교체 필요)
-  const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE";
-
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <div className="app-container">
-        {/* Toast Notification */}
+    <div className="app-container">
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="toast-container">
           <div className="toast">
@@ -124,7 +119,6 @@ export default function App() {
           />
         )}
       </main>
-      </div>
-    </GoogleOAuthProvider>
+    </div>
   );
 }

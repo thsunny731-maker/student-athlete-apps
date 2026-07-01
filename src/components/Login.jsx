@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../firebase';
 
 export default function Login({ users, students, setUsers, setStudents, onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -17,11 +17,12 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
   const [regStudentClass, setRegStudentClass] = useState('1반');
   const [regSuccessMsg, setRegSuccessMsg] = useState('');
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleLogin = async () => {
     try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      const email = decoded.email;
-      const name = decoded.name;
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const email = user.email;
+      const name = user.displayName || '이름 없음';
 
       const foundUser = users.find(u => u.email === email && u.role === loginRole);
       if (foundUser) {
@@ -42,12 +43,9 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
         setRegSuccessMsg('구글 계정이 확인되었습니다. 학생 선수 정보를 입력하여 가입을 완료해 주세요.');
       }
     } catch (err) {
+      console.error(err);
       setLoginError('구글 로그인 중 오류가 발생했습니다.');
     }
-  };
-
-  const handleGoogleError = () => {
-    setLoginError('구글 로그인에 실패했습니다.');
   };
 
   const handleRegister = (e) => {
@@ -138,18 +136,17 @@ export default function Login({ users, students, setUsers, setStudents, onLogin 
                 </div>
               </div>
 
-              <div style={{fontSize:'0.9rem', color:'var(--text-secondary)', textAlign:'center', lineHeight:'1.5'}}>
+              <div style={{fontSize:'0.9rem', color:'var(--text-secondary)', textAlign:'center', lineHeight:'1.5', marginBottom:'0.5rem'}}>
                 본 시스템은 <strong>구글 소셜 로그인만</strong> 지원합니다.<br/>사용하시는 구글 계정으로 안전하게 시작하세요.
               </div>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                useOneTap
-                theme="filled_blue"
-                text="signin_with"
-                shape="rectangular"
-                width="100%"
-              />
+              <button 
+                type="button" 
+                onClick={handleGoogleLogin} 
+                style={{width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.75rem', backgroundColor:'white', border:'1px solid var(--border-color)', borderRadius:'var(--radius-lg)', padding:'0.75rem', fontSize:'0.95rem', fontWeight:'600', color:'var(--text-primary)', cursor:'pointer', boxShadow:'0 1px 2px rgba(0,0,0,0.05)'}}
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{width:'18px', height:'18px'}} />
+                Sign in with Google
+              </button>
             </div>
           ) : (
             <form onSubmit={handleRegister}>
